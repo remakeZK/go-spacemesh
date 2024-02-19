@@ -163,7 +163,7 @@ func newTestBuilder(tb testing.TB, numSigners int, opts ...BuilderOption) *testA
 	)
 	tab.Builder = b
 
-	for i := 0; i < numSigners; i++ {
+	for range numSigners {
 		sig, err := signing.NewEdSigner()
 		require.NoError(tb, err)
 		tab.Register(sig)
@@ -285,7 +285,7 @@ func TestBuilder_RestartSmeshing(t *testing.T) {
 
 	t.Run("Single threaded", func(t *testing.T) {
 		builder := getBuilder(t)
-		for i := 0; i < 50; i++ {
+		for range 50 {
 			require.NoError(t, builder.StartSmeshing(types.Address{}))
 			require.True(t, builder.Smeshing())
 			require.NoError(t, builder.StopSmeshing(false))
@@ -301,7 +301,7 @@ func TestBuilder_RestartSmeshing(t *testing.T) {
 		var eg errgroup.Group
 		for worker := 0; worker < 10; worker += 1 {
 			eg.Go(func() error {
-				for i := 0; i < 50; i++ {
+				for range 50 {
 					builder.StartSmeshing(types.Address{})
 					builder.StopSmeshing(false)
 				}
