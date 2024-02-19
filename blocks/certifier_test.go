@@ -226,7 +226,6 @@ func Test_HandleSyncedCertificate_MultipleCertificates(t *testing.T) {
 		},
 	}
 	for _, tc := range tt {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			tcc := newTestCertifier(t, 1)
 			numMsgs := tcc.cfg.CertifyThreshold / int(defaultCnt)
@@ -361,7 +360,6 @@ func Test_HandleCertifyMessage(t *testing.T) {
 	}
 
 	for _, tc := range tt {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			testCert := newTestCertifier(t, 1)
 			b := generateBlock(t, testCert.db)
@@ -409,7 +407,6 @@ func Test_HandleCertifyMessage_Certified(t *testing.T) {
 		},
 	}
 	for _, tc := range tt {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			tcc := newTestCertifier(t, 1)
 			numMsgs := tcc.cfg.CommitteeSize
@@ -480,7 +477,6 @@ func Test_HandleCertifyMessage_MultipleCertificates(t *testing.T) {
 		},
 	}
 	for _, tc := range tt {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			tcc := newTestCertifier(t, 1)
 			numMsgs := tcc.cfg.CommitteeSize

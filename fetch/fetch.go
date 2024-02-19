@@ -361,7 +361,6 @@ func (f *Fetch) Start() error {
 			return nil
 		})
 		for _, srv := range f.servers {
-			srv := srv
 			f.eg.Go(func() error {
 				return srv.Run(f.shutdownCtx)
 			})
@@ -587,7 +586,6 @@ func (f *Fetch) send(requests []RequestMessage) {
 
 	peer2batches := f.organizeRequests(requests)
 	for peer, peerBatches := range peer2batches {
-		peer := peer
 		for _, reqs := range peerBatches {
 			batch := &batchInfo{
 				RequestBatch: RequestBatch{

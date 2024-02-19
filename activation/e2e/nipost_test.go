@@ -393,7 +393,6 @@ func Test_NIPostBuilderWithMultipleClients(t *testing.T) {
 	validator := activation.NewMocknipostValidator(ctrl)
 	var eg errgroup.Group
 	for _, sig := range signers {
-		sig := sig
 		opts := opts
 		eg.Go(func() error {
 			mgr, err := activation.NewPostSetupManager(cfg, logger, cdb, goldenATX, syncer, validator)
@@ -460,7 +459,6 @@ func Test_NIPostBuilderWithMultipleClients(t *testing.T) {
 		PublishEpoch: postGenesisEpoch + 2,
 	}
 	for _, sig := range signers {
-		sig := sig
 		eg.Go(func() error {
 			nipost, err := nb.BuildNIPost(context.Background(), sig, &challenge)
 			require.NoError(t, err)

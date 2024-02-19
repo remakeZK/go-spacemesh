@@ -146,7 +146,7 @@ func TestData(t *testing.T) {
 }
 
 func TestMemory(t *testing.T) {
-	test := func(t *testing.T, size int, memory, delta uint64) {
+	test := func(t *testing.T, size, memory, delta uint64) {
 		runtime.GC()
 		var before runtime.MemStats
 		runtime.ReadMemStats(&before)
@@ -172,7 +172,7 @@ func TestMemory(t *testing.T) {
 		test(t, 1_000_000, 189_956_096, 300_000)
 	})
 	t.Run("100_000", func(t *testing.T) {
-		test(t, 100_000, 16_080_896, 200_000)
+		test(t, 100_000, 14_491_648, 200_000)
 	})
 }
 
@@ -259,7 +259,6 @@ func BenchmarkWeightForSet(b *testing.B) {
 		{1_000_000, 400_000},
 		{1_000_000, 1_000_000},
 	} {
-		bc := bc
 		b.Run(fmt.Sprintf("size=%d set_size=%d", bc.size, bc.setSize), func(b *testing.B) {
 			benchmarkkWeightForSet(b, bc.size, bc.setSize)
 		})

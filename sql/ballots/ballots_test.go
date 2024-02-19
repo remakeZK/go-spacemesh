@@ -309,7 +309,6 @@ func TestAllFirstInEpoch(t *testing.T) {
 			[]int{2, 3},
 		},
 	} {
-		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
 			db := sql.InMemory()

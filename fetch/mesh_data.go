@@ -90,7 +90,6 @@ func (f *Fetch) getHashes(
 			continue
 		}
 
-		h := hash
 		eg.Go(func() error {
 			select {
 			case <-ctx.Done():
@@ -103,7 +102,7 @@ func (f *Fetch) getHashes(
 				if p.err != nil {
 					f.logger.With().Debug("failed to get hash",
 						log.String("hint", string(hint)),
-						log.Stringer("hash", h),
+						log.Stringer("hash", hash),
 						log.Err(p.err),
 					)
 

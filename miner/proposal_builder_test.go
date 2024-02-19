@@ -733,7 +733,6 @@ func TestBuild(t *testing.T) {
 			},
 		},
 	} {
-		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			var (
 				ctx       = context.Background()
@@ -1023,7 +1022,6 @@ func TestGradeAtx(t *testing.T) {
 			result:      evil,
 		},
 	} {
-		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			mockMsh := mocks.NewMockmesh(gomock.NewController(t))
 			epochStart := time.Now()

@@ -1174,7 +1174,6 @@ func TestProposal_ProposalGossip_Fetched(t *testing.T) {
 		},
 	}
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			th := createTestHandlerNoopDecoder(t)
 			lid := th.clock.CurrentLayer()
