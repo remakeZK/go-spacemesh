@@ -388,6 +388,8 @@ linters-settings:
             desc: Should be replaced by standard lib context package
           - pkg: "golang.org/x/crypto/ed25519"
             desc: Should be replaced by standard lib ed25519 package
+          - pkg: "math/rand"
+            desc: Should be replaced by crypto/rand or math/rand/v2
 
   gci:
     # Section configuration to compare against.

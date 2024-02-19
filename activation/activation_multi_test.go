@@ -2,7 +2,7 @@ package activation
 
 import (
 	"context"
-	"math/rand"
+	"math/rand/v2"
 	"sync"
 	"testing"
 	"time"

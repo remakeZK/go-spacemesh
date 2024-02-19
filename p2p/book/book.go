@@ -3,11 +3,12 @@ package book
 import (
 	"bufio"
 	"container/list"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"hash/crc64"
 	"io"
-	"math/rand"
+	"math/rand/v2"
 	"sort"
 	"strconv"
 	"sync"
@@ -125,16 +126,20 @@ func WithLimit(limit int) Opt {
 // WithRand overwrites default seed for determinism in tests.
 func WithRand(seed int64) Opt {
 	return func(b *Book) {
-		b.rng = rand.New(rand.NewSource(seed))
+		var seedBytes [32]byte
+		binary.LittleEndian.PutUint64(seedBytes[:], uint64(seed))
+		b.rng = rand.New(rand.NewChaCha8(seedBytes))
 	}
 }
 
 func New(opts ...Opt) *Book {
+	var seed [32]byte
+	binary.LittleEndian.PutUint64(seed[:], uint64(time.Now().UnixNano()))
 	b := &Book{
 		limit:     50000,
 		known:     map[ID]*addressInfo{},
 		queue:     list.New(),
-		rng:       rand.New(rand.NewSource(time.Now().Unix())),
+		rng:       rand.New(rand.NewChaCha8(seed)),
 		shareable: []*addressInfo{},
 	}
 	for _, opt := range opts {

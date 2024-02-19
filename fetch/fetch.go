@@ -3,8 +3,9 @@ package fetch
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
-	"math/rand"
+	"math/rand/v2"
 	"sync"
 	"time"
 
@@ -164,7 +165,7 @@ func DefaultConfig() Config {
 
 // randomPeer returns a random peer from current peer list.
 func randomPeer(peers []p2p.Peer) p2p.Peer {
-	return peers[rand.Intn(len(peers))]
+	return peers[rand.IntN(len(peers))]
 }
 
 // Option is a type to configure a fetcher.
@@ -613,7 +614,9 @@ func (f *Fetch) send(requests []RequestMessage) {
 }
 
 func (f *Fetch) organizeRequests(requests []RequestMessage) map[p2p.Peer][][]RequestMessage {
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	var seed [32]byte
+	binary.LittleEndian.PutUint64(seed[:], uint64(time.Now().UnixNano()))
+	rng := rand.New(rand.NewChaCha8(seed))
 	peer2requests := make(map[p2p.Peer][]RequestMessage)
 
 	best := f.peers.SelectBest(RedundantPeers)
