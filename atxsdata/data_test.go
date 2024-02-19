@@ -159,7 +159,7 @@ func TestMemory(t *testing.T) {
 			)
 			binary.PutUvarint(node[:], uint64(i+1))
 			binary.PutUvarint(atx[:], uint64(i+1))
-			c.Add(1, node, atx, 500, 100, 0, 0, false)
+			c.Add(1, node, types.Address{}, atx, 500, 100, 0, 0, false)
 		}
 		runtime.GC()
 		var after runtime.MemStats
@@ -189,7 +189,7 @@ func BenchmarkConcurrentReadWrite(b *testing.B) {
 		)
 		binary.PutUvarint(node[:], uint64(i+1))
 		binary.PutUvarint(atx[:], uint64(i+1))
-		c.Add(epoch, node, atx, 500, 100, 0, 0, false)
+		c.Add(epoch, node, types.Address{}, atx, 500, 100, 0, 0, false)
 	}
 	b.ResetTimer()
 
