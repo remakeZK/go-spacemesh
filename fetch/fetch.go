@@ -33,7 +33,8 @@ const (
 
 	cacheSize = 1000
 
-	RedundantPeers = 5
+	RedundantPeers  = 20
+	BatchRetryLimit = 3
 )
 
 var (
@@ -619,6 +620,7 @@ func (f *Fetch) send(requests []RequestMessage) {
 	}
 
 	peer2batches := f.organizeRequests(requests)
+
 	for peer, peerBatches := range peer2batches {
 		peer := peer
 		for _, reqs := range peerBatches {
@@ -630,35 +632,52 @@ func (f *Fetch) send(requests []RequestMessage) {
 			}
 			batch.setID()
 			go func() {
-				if f.cfg.Streaming {
-					if err := f.streamBatch(peer, batch); err != nil {
-						f.logger.With().Debug(
-							"failed to process batch request",
-							log.Stringer("batch", batch.ID),
-							log.Stringer("peer", peer),
-							log.Err(err),
-						)
+				for i := 0; i < BatchRetryLimit; i++ {
+					if f.cfg.Streaming {
+						if err := f.streamBatch(peer, batch); err != nil {
+							f.logger.With().Debug(
+								"failed to process batch request",
+								log.Stringer("batch", batch.ID),
+								log.Stringer("peer", peer),
+								log.Err(err),
+							)
+						} else {
+							return
+						}
+					} else {
+						data, err := f.sendBatch(peer, batch)
+						if err != nil {
+							f.logger.With().Debug(
+								"failed to send batch request",
+								log.Stringer("batch", batch.ID),
+								log.Stringer("peer", peer),
+								log.Err(err),
+							)
+							best := f.peers.SelectBest(RedundantPeers)
+							if len(best) == 0 {
+								f.logger.With().Error("no active peers")
+								f.handleHashError(batch, err)
+								return
+							}
+							peer = randomPeer(best)
+							batch.peer = peer
+							if i != BatchRetryLimit-1 {
+								continue
+							}
+
+							f.handleHashError(batch, err)
+						} else {
+							f.receiveResponse(data, batch)
+							return
+						}
 					}
-					return
-				}
-				data, err := f.sendBatch(peer, batch)
-				if err != nil {
-					f.logger.With().Debug(
-						"failed to send batch request",
-						log.Stringer("batch", batch.ID),
-						log.Stringer("peer", peer),
-						log.Err(err),
-					)
-					f.handleHashError(batch, err)
-				} else {
-					f.receiveResponse(data, batch)
 				}
 			}()
 		}
 	}
 }
 
-func (f *Fetch) organizeRequests(requests []RequestMessage) map[p2p.Peer][][]RequestMessage {
+func (f *Fetch) organizeRequestsOrigin(requests []RequestMessage) map[p2p.Peer][][]RequestMessage {
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 	peer2requests := make(map[p2p.Peer][]RequestMessage)
 
@@ -833,6 +852,59 @@ func (f *Fetch) receiveStreamedBatch(
 	}
 
 	return nBytes, nil
+}
+
+func (f *Fetch) organizeRequests(requests []RequestMessage) map[p2p.Peer][][]RequestMessage {
+	peer2requests := make(map[p2p.Peer][]RequestMessage)
+
+	best := f.peers.SelectBest(RedundantPeers)
+	if len(best) == 0 {
+		f.logger.Info("cannot send batch: no peers found")
+		f.mu.Lock()
+		defer f.mu.Unlock()
+		errNoPeer := errors.New("no peers")
+		for _, msg := range requests {
+			if req, ok := f.ongoing[msg.Hash]; ok {
+				req.promise.err = errNoPeer
+				close(req.promise.completed)
+				delete(f.ongoing, req.hash)
+			} else {
+				f.logger.With().Error("ongoing request missing",
+					log.Stringer("hash", msg.Hash),
+					log.String("hint", string(msg.Hint)),
+				)
+			}
+		}
+		return nil
+	}
+	for _, req := range requests {
+		target := randomPeer(best)
+		_, ok := peer2requests[target]
+		if !ok {
+			peer2requests[target] = []RequestMessage{req}
+		} else {
+			peer2requests[target] = append(peer2requests[target], req)
+		}
+	}
+
+	// split every peer's requests into batches of f.cfg.BatchSize each
+	result := make(map[p2p.Peer][][]RequestMessage)
+	for peer, reqs := range peer2requests {
+		if len(reqs) < f.cfg.BatchSize {
+			result[peer] = [][]RequestMessage{
+				reqs,
+			}
+			continue
+		}
+		for i := 0; i < len(reqs); i += f.cfg.BatchSize {
+			j := i + f.cfg.BatchSize
+			if j > len(reqs) {
+				j = len(reqs)
+			}
+			result[peer] = append(result[peer], reqs[i:j])
+		}
+	}
+	return result
 }
 
 // sendBatch dispatches batched request messages to provided peer.

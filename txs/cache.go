@@ -461,6 +461,7 @@ func groupTXsByPrincipal(logger log.Log, mtxs []*types.MeshTransaction) map[type
 
 // buildFromScratch builds the cache from database.
 func (c *Cache) buildFromScratch(db *sql.Database) error {
+	start := time.Now()
 	applied, err := layers.GetLastApplied(db)
 	if err != nil {
 		return fmt.Errorf("cache: get pending %w", err)
@@ -469,6 +470,8 @@ func (c *Cache) buildFromScratch(db *sql.Database) error {
 	if err != nil {
 		return fmt.Errorf("pending transactions %w", err)
 	}
+	c.logger.Info("debugx AddressesWithPendingTransactions took %vv", time.Since(start))
+	start = time.Now()
 	var rst []*types.MeshTransaction
 	for _, addr := range addresses {
 		txs, err := transactions.GetAcctPendingFromNonce(db, addr.Address, addr.Nonce)
@@ -477,6 +480,8 @@ func (c *Cache) buildFromScratch(db *sql.Database) error {
 		}
 		rst = append(rst, txs...)
 	}
+	c.logger.Info("debugx GetAcctPendingFromNonce took %vv", time.Since(start))
+	start = time.Now()
 	for _, mtx := range rst {
 		if mtx.State == types.APPLIED {
 			continue
@@ -488,7 +493,12 @@ func (c *Cache) buildFromScratch(db *sql.Database) error {
 		mtx.LayerID = nextLayer
 		mtx.BlockID = nextBlock
 	}
-	return c.BuildFromTXs(rst, nil)
+	c.logger.Info("debugx getNextIncluded took %vv", time.Since(start))
+	start = time.Now()
+
+	err = c.BuildFromTXs(rst, nil)
+	c.logger.Info("debugx BuildFromTXs took %vv", time.Since(start))
+	return err
 }
 
 // BuildFromTXs builds the cache from the provided transactions.
@@ -787,14 +797,18 @@ func (c *Cache) ApplyLayer(
 }
 
 func (c *Cache) RevertToLayer(db *sql.Database, revertTo types.LayerID) error {
+	start := time.Now()
 	if err := undoLayers(db, revertTo.Add(1)); err != nil {
 		return err
 	}
+	c.logger.Info("RevertToLayer took %v", time.Since(start))
 
+	start = time.Now()
 	if err := c.buildFromScratch(db); err != nil {
 		c.logger.With().Error("failed to build from scratch after revert", log.Err(err))
 		return err
 	}
+	c.logger.Info("buildFromScratch took %v", time.Since(start))
 	return nil
 }
 
