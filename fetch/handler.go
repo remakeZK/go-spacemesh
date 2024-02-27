@@ -193,7 +193,9 @@ func (h *handler) handleHashReq(ctx context.Context, data []byte) ([]byte, error
 		if err != nil {
 			h.logger.With().Debug("serve: remote peer requested nonexistent hash",
 				log.Context(ctx),
+			h.logger.WithContext(ctx).With().Warning("serve: remote peer requested nonexistent hash",
 				log.String("hash", r.Hash.ShortString()),
+				log.Stringer("batch", requestBatch.ID),
 				log.String("hint", string(r.Hint)),
 				log.Err(err))
 			hashMissing.WithLabelValues(string(r.Hint)).Add(1)
@@ -201,14 +203,18 @@ func (h *handler) handleHashReq(ctx context.Context, data []byte) ([]byte, error
 		} else if res == nil {
 			h.logger.With().Debug("serve: remote peer requested golden",
 				log.Context(ctx),
+			h.logger.WithContext(ctx).With().Warning("serve: remote peer requested golden",
 				log.String("hash", r.Hash.ShortString()),
+				log.Stringer("batch", requestBatch.ID),
 				log.Int("dataSize", len(res)))
 			hashEmptyData.WithLabelValues(string(r.Hint)).Add(1)
 			continue
 		} else {
 			h.logger.With().Debug("serve: responded to hash request",
 				log.Context(ctx),
+			h.logger.WithContext(ctx).With().Warning("serve: responded to hash request",
 				log.String("hash", r.Hash.ShortString()),
+				log.Stringer("batch", requestBatch.ID),
 				log.Int("dataSize", len(res)))
 		}
 		// add response to batch
@@ -226,8 +232,7 @@ func (h *handler) handleHashReq(ctx context.Context, data []byte) ([]byte, error
 			log.Err(err),
 			log.String("batch_hash", resBatch.ID.ShortString()))
 	}
-	h.logger.With().Debug("serve: returning response for batch",
-		log.Context(ctx),
+	h.logger.WithContext(ctx).With().Warning("serve: returning response for batch",
 		log.String("batch_hash", resBatch.ID.ShortString()),
 		log.Int("count_responses", len(resBatch.Responses)),
 		log.Int("data_size", len(bts)))

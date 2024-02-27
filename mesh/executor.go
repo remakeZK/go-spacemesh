@@ -52,13 +52,23 @@ func (e *Executor) Revert(ctx context.Context, revertTo types.LayerID) error {
 	if err := e.vm.Revert(revertTo); err != nil {
 		return fmt.Errorf("revert state: %w", err)
 	}
+
 	if err := e.cs.RevertCache(revertTo); err != nil {
 		return fmt.Errorf("revert cache: %w", err)
 	}
+	e.logger.With().Info("debug",
+		log.Context(ctx),
+		log.String("stepxxx", "RevertCache"),
+	)
+
 	root, err := e.vm.GetStateRoot()
 	if err != nil {
 		return fmt.Errorf("get state hash: %w", err)
 	}
+	e.logger.With().Info("debug",
+		log.Context(ctx),
+		log.String("stepxxx", "GetStateRoot"),
+	)
 	e.logger.With().Info("reverted state",
 		log.Context(ctx),
 		log.Stringer("state_hash", root),
