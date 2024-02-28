@@ -102,6 +102,9 @@ configuration is as follows:
 
 ### Features
 
+* [#5612](https://github.com/spacemeshos/go-spacemesh/pull/5612)
+  Add relay command for running dedicated relay nodes
+
 ### Improvements
 
 * [#5418](https://github.com/spacemeshos/go-spacemesh/pull/5418) Add `grpc-post-listener` to separate post service from
