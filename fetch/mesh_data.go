@@ -107,7 +107,7 @@ func (f *Fetch) getHashes(
 					)
 
 					mu.Lock()
-					bfailure.Add(h, p.err)
+					bfailure.Add(hash, p.err)
 					mu.Unlock()
 				}
 				return nil
