@@ -14,11 +14,15 @@
         "grpc-post-listener": "0.0.0.0:9094"
     },
     "fetch": {
-        "servers-metrics": true
+        "servers-metrics": true,
+        "log-peer-stats-interval": "1m"
     },
     "smeshing": {
         "smeshing-verifying-opts": {
             "smeshing-opts-verifying-min-workers": 1000000
         }
+    },
+    "logging": {
+        "syncer": "debug"
     }
 }
