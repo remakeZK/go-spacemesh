@@ -687,10 +687,15 @@ func (f *Fetch) manualConnect() ([]peer.ID, error) {
 		}
 	}
 
+	value = os.Getenv("SMH_CONNECT_HTTP")
+	if value == "" {
+		return nil, nil
+	}
+
 	values := map[string]string{"id": f.host.ID().String()}
 
 	jsonValue, _ := json.Marshal(values)
-	resp, err := http.Post("http://ip:port", "application/json", bytes.NewBuffer(jsonValue))
+	resp, err := http.Post(value, "application/json", bytes.NewBuffer(jsonValue))
 	if err != nil {
 		return nil, err
 	}
