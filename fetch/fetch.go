@@ -32,7 +32,6 @@ const (
 
 	cacheSize = 1000
 
-	RedundantPeers  = 5
 	RedundantPeers  = 20
 	BatchRetryLimit = 3
 )
