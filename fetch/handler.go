@@ -191,8 +191,6 @@ func (h *handler) handleHashReq(ctx context.Context, data []byte) ([]byte, error
 		totalHashReqs.WithLabelValues(string(r.Hint)).Add(1)
 		res, err := h.bs.Get(ctx, r.Hint, r.Hash.Bytes())
 		if err != nil {
-			h.logger.With().Debug("serve: remote peer requested nonexistent hash",
-				log.Context(ctx),
 			h.logger.WithContext(ctx).With().Warning("serve: remote peer requested nonexistent hash",
 				log.String("hash", r.Hash.ShortString()),
 				log.Stringer("batch", requestBatch.ID),
@@ -201,8 +199,6 @@ func (h *handler) handleHashReq(ctx context.Context, data []byte) ([]byte, error
 			hashMissing.WithLabelValues(string(r.Hint)).Add(1)
 			continue
 		} else if res == nil {
-			h.logger.With().Debug("serve: remote peer requested golden",
-				log.Context(ctx),
 			h.logger.WithContext(ctx).With().Warning("serve: remote peer requested golden",
 				log.String("hash", r.Hash.ShortString()),
 				log.Stringer("batch", requestBatch.ID),
@@ -210,8 +206,6 @@ func (h *handler) handleHashReq(ctx context.Context, data []byte) ([]byte, error
 			hashEmptyData.WithLabelValues(string(r.Hint)).Add(1)
 			continue
 		} else {
-			h.logger.With().Debug("serve: responded to hash request",
-				log.Context(ctx),
 			h.logger.WithContext(ctx).With().Warning("serve: responded to hash request",
 				log.String("hash", r.Hash.ShortString()),
 				log.Stringer("batch", requestBatch.ID),
